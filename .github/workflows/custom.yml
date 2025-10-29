@@ -19,9 +19,9 @@ jobs:
         echo "**Release Date:** $(date)" >> release_notes.md
         echo "**Description:** ${{ github.event.release.body }}" >> release_notes.md
         echo "### Automated Workflow Summary:" >> release_notes.md
-        echo "- CI Tests Passed" >> release_notes.md
-        echo "- Security Scans Completed" >> release-notes.md
-        echo "- Documentation Updated" >> release_notes.md
+        echo "- CI Tests Passed " >> release_notes.md
+        echo "- Security Scans Completed " >> release-notes.md
+        echo "- Documentation Updated " >> release_notes.md
         
     - name: Upload release notes
       uses: actions/upload-artifact@v3
