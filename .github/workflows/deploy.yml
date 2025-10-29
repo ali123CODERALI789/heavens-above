@@ -17,10 +17,10 @@ jobs:
       with:
         node-version: '18'
         
-    - name: Install and build
-      run: |
-        npm install
-        npm run build
+    # - name: Install and build
+    #   run: |
+    #     npm install
+    #     npm run build
         
     - name: Deploy to GitHub Pages
       uses: peaceiris/actions-gh-pages@v3
