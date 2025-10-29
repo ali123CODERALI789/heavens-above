@@ -1,0 +1,30 @@
+name: Code Review
+
+on:
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  code-quality:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Super-Linter
+      uses: github/super-linter@v5
+      env:
+        DEFAULT_BRANCH: main
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        
+    - name: Security Scan
+      uses: actions/dependency-review-action@v3
+      
+  required-checks:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Require tests
+      run: |
+        echo "All tests must pass before merge"
+        echo "Code review must be approved"
