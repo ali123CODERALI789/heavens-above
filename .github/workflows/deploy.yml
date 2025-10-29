@@ -1,11 +1,12 @@
-name: Deploy to GitHub Pages
+name: Deploy Documentation
 
 on:
   push:
     branches: [ main ]
+    paths: ['docs/**', 'README.md']
 
 jobs:
-  deploy:
+  deploy-docs:
     runs-on: ubuntu-latest
     
     steps:
@@ -17,13 +18,18 @@ jobs:
       with:
         node-version: '18'
         
-    # - name: Install and build
-    #   run: |
-    #     npm install
-    #     npm run build
+    - name: Install dependencies
+      run: npm install
+      
+    - name: Build documentation
+      run: |
+        mkdir -p docs
+        echo "# Heavens Above Documentation" > docs/index.html
+        echo "<h1>Project Documentation</h1>" >> docs/index.html
+        echo "<p>Automatically deployed via GitHub Actions</p>" >> docs/index.html
         
     - name: Deploy to GitHub Pages
       uses: peaceiris/actions-gh-pages@v3
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./dist
+        publish_dir: ./docs
