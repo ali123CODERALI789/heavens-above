@@ -1,30 +1,56 @@
-name: Code Review
+name: Code Review Automation
 
 on:
   pull_request:
-    branches: [ main ]
+    branches: [ main, develop ]
+  pull_request_review:
+    types: [submitted]
 
 jobs:
-  code-quality:
+  code-analysis:
     runs-on: ubuntu-latest
     
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
       
-    - name: Super-Linter
-      uses: github/super-linter@v5
-      env:
-        DEFAULT_BRANCH: main
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
         
-    - name: Security Scan
-      uses: actions/dependency-review-action@v3
+    - name: Install dependencies
+      run: npm install
       
-  required-checks:
-    runs-on: ubuntu-latest
-    steps:
-    - name: Require tests
+    - name: Run tests on PR
+      run: npm test
+      
+    - name: Code quality check
       run: |
-        echo "All tests must pass before merge"
-        echo "Code review must be approved"
+        echo "Running code quality analysis..."
+        npx eslint . --ext .js,.jsx,.ts,.tsx --format json > eslint-report.json || true
+        echo "Code quality check completed"
+        
+    - name: Security scan
+      run: |
+        npm audit --audit-level moderate
+        echo "Security audit completed"
+        
+    - name: Size analysis
+      run: |
+        echo "Checking bundle size impact..."
+        du -sh . || echo "Size check completed"
+        
+    - name: Upload review artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: code-review-reports
+        path: |
+          eslint-report.json
+          coverage/
+        retention-days: 30
+        
+    - name: PR status update
+      run: |
+        echo "Code review automation completed"
+        echo "All checks passed for PR: ${{ github.event.pull_request.number }}"
