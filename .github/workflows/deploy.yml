@@ -6,15 +6,15 @@ on:
   release:
     types: [published]
 
-env:
-  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-
 jobs:
   deploy-staging:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     environment: staging
+    
+    env:
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
     
     steps:
     - name: Checkout code
@@ -28,26 +28,28 @@ jobs:
     - name: Install Vercel CLI
       run: npm install --global vercel@32.5.2
       
+    - name: Pull Vercel Environment Information
+      run: vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
+      
+    - name: Build Project Artifacts
+      run: vercel build --token=${{ secrets.VERCEL_TOKEN }}
+      
     - name: Deploy to Vercel Preview
-      run: |
-        vercel --token ${{ secrets.VERCEL_TOKEN }} --yes
-        vercel --token ${{ secrets.VERCEL_TOKEN }} --prod --yes
-        
-    - name: Store deployment URL
-      run: |
-        echo "DEPLOYMENT_URL=https://heavens-above-git-main-${{ github.repository_owner }}.vercel.app" >> $GITHUB_ENV
+      run: vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }}
         
     - name: Deployment success notification
       run: |
         echo "Application deployed successfully to Vercel"
-        echo "URL: https://heavens-above-git-main-${{ github.repository_owner }}.vercel.app"
         echo "Deployment completed at: $(date)"
-        
+
   deploy-production:
     if: github.event_name == 'release'
     runs-on: ubuntu-latest
     environment: production
-    needs: deploy-staging
+    
+    env:
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
     
     steps:
     - name: Checkout code
@@ -56,4 +58,4 @@ jobs:
     - name: Deploy to Vercel Production
       run: |
         npm install --global vercel@32.5.2
-        vercel --token ${{ secrets.VERCEL_TOKEN }} --prod --yes --confirm
+        vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
