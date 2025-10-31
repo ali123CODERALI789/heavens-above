@@ -1,13 +1,20 @@
-name: Deploy Documentation
+name: Deployment Pipeline
 
 on:
   push:
     branches: [ main ]
-    paths: ['docs/**', 'README.md']
+  release:
+    types: [published]
+
+env:
+  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
 
 jobs:
-  deploy-docs:
+  deploy-staging:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
+    environment: staging
     
     steps:
     - name: Checkout code
@@ -18,18 +25,35 @@ jobs:
       with:
         node-version: '18'
         
-    - name: Install dependencies
-      run: npm install
+    - name: Install Vercel CLI
+      run: npm install --global vercel@32.5.2
       
-    - name: Build documentation
+    - name: Deploy to Vercel Preview
       run: |
-        mkdir -p docs
-        echo "# Heavens Above Documentation" > docs/index.html
-        echo "<h1>Project Documentation</h1>" >> docs/index.html
-        echo "<p>Automatically deployed via GitHub Actions</p>" >> docs/index.html
+        vercel --token ${{ secrets.VERCEL_TOKEN }} --yes
+        vercel --token ${{ secrets.VERCEL_TOKEN }} --prod --yes
         
-    - name: Deploy to GitHub Pages
-      uses: peaceiris/actions-gh-pages@v3
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./docs
+    - name: Store deployment URL
+      run: |
+        echo "DEPLOYMENT_URL=https://heavens-above-git-main-${{ github.repository_owner }}.vercel.app" >> $GITHUB_ENV
+        
+    - name: Deployment success notification
+      run: |
+        echo "Application deployed successfully to Vercel"
+        echo "URL: https://heavens-above-git-main-${{ github.repository_owner }}.vercel.app"
+        echo "Deployment completed at: $(date)"
+        
+  deploy-production:
+    if: github.event_name == 'release'
+    runs-on: ubuntu-latest
+    environment: production
+    needs: deploy-staging
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Deploy to Vercel Production
+      run: |
+        npm install --global vercel@32.5.2
+        vercel --token ${{ secrets.VERCEL_TOKEN }} --prod --yes --confirm
