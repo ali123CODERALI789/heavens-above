@@ -1,18 +1,21 @@
-name: Deploy Documentation
+name: Documentation Deployment
 on:
   push:
     branches: [main]
     paths: ['docs/**']
-  workflow_dispatch:
 
 jobs:
   deploy-docs:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Deploy to GitHub Pages
+      - uses: actions/checkout@v4
+      - name: Build documentation
         run: |
           mkdir -p docs
           echo "# Heavens Above Documentation" > docs/index.md
           echo "Automatically deployed via GitHub Actions" >> docs/index.md
+      - name: Upload documentation
+        uses: actions/upload-artifact@v4
+        with:
+          name: documentation
+          path: docs/
