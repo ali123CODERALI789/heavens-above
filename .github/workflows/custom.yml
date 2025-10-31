@@ -1,14 +1,13 @@
 name: Custom - Release Notes Generator
-
 on:
-  workflow_dispatch:
+  workflow_dispatch:  # MANUAL TRIGGER
 
 jobs:
   generate-notes:
     runs-on: ubuntu-latest
     steps:
-      - name: Create release summary
+      - name: Generate Release Summary
         run: |
-          echo "Custom workflow executed successfully!"
-          echo "Run at: $(date)"
-          echo "Assignment requirement fulfilled"
+          echo " Custom workflow executed successfully!"
+          echo " Timestamp: $(date)"
+          echo " Assignment requirement fulfilled"
