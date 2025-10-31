@@ -1,9 +1,8 @@
 name: Documentation Deployment
-
 on:
   push:
     branches: [main]
-    paths: ['docs/**']
+  workflow_dispatch:  # ADD THIS LINE
 
 permissions:
   pages: write
@@ -12,27 +11,13 @@ permissions:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Setup Pages
-        uses: actions/configure-pages@v4
-      - name: Build documentation
+      - uses: actions/checkout@v4
+      - name: Build docs
         run: |
           mkdir -p _site
-          echo "# Heavens Above Documentation" > _site/index.html
-          echo "<p>Automated documentation deployment</p>" >> _site/index.html
-          echo "<h2>Workflows</h2>" >> _site/index.html
-          echo "<ul>" >> _site/index.html
-          echo "<li>Continuous Integration</li>" >> _site/index.html
-          echo "<li>Deployment Pipeline</li>" >> _site/index.html
-          echo "<li>Scheduled Maintenance</li>" >> _site/index.html
-          echo "</ul>" >> _site/index.html
+          echo "<h1>Documentation</h1>" > _site/index.html
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
       - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v3
